@@ -1,24 +1,36 @@
 import sys
 import traceback
 import inspect
+from pprint import pprint
 from pycurlbrowser.browser import Browser
 
 def debug_exceptions(type, value, tb):
-    base_name = "debug"
+    base_name = "dump"
+
+    # find a browser object in the stack
+    frames = inspect.getinnerframes(tb)
+    frames.reverse() # reversed because we want the innermost first
+    browser = None
+    for frame, _, _, _, _, _ in frames:
+        for v in inspect.getargvalues(frame).locals.values():
+            if isinstance(v, Browser):
+                browser = v
+                break
+
+    localest = frames[0][0]
 
     # stick a trace in a file
     with open(base_name + '.trace', 'w') as tracefile:
-        tracefile.write(str(inspect.getargvalues(tb.tb_frame)))
+        tracefile.write("Locals: ")
+        pprint(localest.f_locals, tracefile)
         tracefile.write("\n\n")
+        if browser is not None:
+            tracefile.write("URL: %s\n" % browser.url)
+            tracefile.write("\n\n")
         traceback.print_tb(tb, file=tracefile)
 
-    # find a browser object and save the current page
-    # TODO: as this is saving the first one it comes across, that might well be the wrong one...
-    for frame, _, _, _, _, _ in inspect.getinnerframes(tb):
-        for v in inspect.getargvalues(frame).locals.values():
-            if isinstance(v, Browser):
-                v.save(base_name + '.html')
-                break
+    if browser is not None:
+        browser.save(base_name + '.html')
 
     # then call the default handler
     sys.__excepthook__(type, value, tb)
