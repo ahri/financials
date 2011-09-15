@@ -10,9 +10,13 @@ class Service(object):
     The basic representation of an service, containing any common stuff
     """
 
-    def __init__(self, initial_url):
+    def __init__(self, initial_url, login_details=None):
         self.browser = Browser(initial_url)
-        self.login()
+        # use inspect.getargspec(self.login) to compare to login_details?
+        if login_details is not None:
+            self.login(**login_details)
+        else:
+            self.login_interactive()
 
     @classmethod
     def services(cls):
@@ -36,27 +40,34 @@ class Halifax(Service):
     Represent Halifax (HBOS) UK
     """
 
-    def __init__(self):
-        super(Halifax, self).__init__('https://www.halifax-online.co.uk/personal/logon/login.jsp')
+    def __init__(self, **kwargs):
+        super(Halifax, self).__init__('https://www.halifax-online.co.uk/personal/logon/login.jsp', **kwargs)
 
-    def login(self):
-        """Called at init"""
-        self.USERNAME = raw_input("Username: ")
-        self.PASSWORD = getpass("Password: ")
-        self.SECRET = getpass("Secret: ")
+    def login_interactive(self):
+        """Called at init if no login details are given"""
+        self.login(raw_input("Username: "),
+                   getpass("Password: "),
+                   getpass("Secret: "))
+
+
+    def login(self, username, password, secret):
+        """Called at init if login details supplied, otherwise called via login()"""
+        self.username = username
+        self.password = password
+        self.secret = secret
 
         b = self.browser
 
         b.form_select('frmLogin')
-        b.form_data_update(**{'frmLogin:strCustomerLogin_userID': self.USERNAME,
-                              'frmLogin:strCustomerLogin_pwd': self.PASSWORD})
+        b.form_data_update(**{'frmLogin:strCustomerLogin_userID': self.username,
+                              'frmLogin:strCustomerLogin_pwd': self.password})
 
         b.form_submit_no_button()
         b.form_select('frmentermemorableinformation1')
 
         for d in b.form_dropdowns_nodes:
             idx = int(d.label.text.replace("Character ", "").replace(u" \xa0", ""))
-            b.form_fill_dropdown(d.name, u"\xa0" + self.SECRET[idx-1])
+            b.form_fill_dropdown(d.name, u"\xa0" + self.secret[idx-1])
 
         b.form_submit_no_button()
 
