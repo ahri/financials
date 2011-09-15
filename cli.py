@@ -54,4 +54,9 @@ class ServiceCmd(ExitCmd):
 
 if __name__ == '__main__':
     interpreter = ServiceCmd()
+
+    import sys
+    from debug import debug_exceptions
+    sys.excepthook = debug_exceptions
+
     interpreter.cmdloop()
