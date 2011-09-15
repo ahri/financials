@@ -1,1 +1,20 @@
-This will develop into a collection of online banking tools
+This will develop into a collection of tools for logging into financial
+services.
+
+License:
+        AGPLv3 (infection hoped-for)
+
+Status:
+        ALPHA/WIP
+        Basic CLI available
+
+Services supported:
+        Halifax (HBOS) UK
+
+Services planned:
+        Natwest
+        T Mobile
+        Santander
+
+App Plans:
+        Auto-login from encrypted config file
