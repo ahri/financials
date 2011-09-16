@@ -12,7 +12,6 @@ class Service(object):
 
     def __init__(self, initial_url, login_details=None):
         self.browser = Browser(initial_url)
-        # use inspect.getargspec(self.login) to compare to login_details?
         if login_details is not None:
             self.login(**login_details)
         else:
@@ -48,7 +47,6 @@ class Halifax(Service):
         self.login(raw_input("Username: "),
                    getpass("Password: "),
                    getpass("Secret: "))
-
 
     def login(self, username, password, secret):
         """Called at init if login details supplied, otherwise called via login()"""

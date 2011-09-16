@@ -21,12 +21,12 @@ def debug_exceptions(type, value, tb):
 
     # stick a trace in a file
     with open(base_name + '.trace', 'w') as tracefile:
-        tracefile.write("Locals: ")
+        tracefile.write("Locals:\n")
         pprint(localest.f_locals, tracefile)
-        tracefile.write("\n\n")
+        tracefile.write("\n")
         if browser is not None:
             tracefile.write("URL: %s\n" % browser.url)
-            tracefile.write("\n\n")
+            tracefile.write("\n")
         traceback.print_tb(tb, file=tracefile)
 
     if browser is not None:
