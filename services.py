@@ -33,6 +33,10 @@ class Service(object):
 
         raise ValueError("No supported service named '%s'" % name)
 
+    @classmethod
+    def login_reqs(cls, svc_name):
+        return inspect.getargspec(cls.service(svc_name).login).args[1:]
+
 class Halifax(Service):
 
     """
