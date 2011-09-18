@@ -17,6 +17,18 @@ class Service(object):
         else:
             self.login_interactive()
 
+    def login_interactive(self):
+        login_details = {}
+        for r in self.login_reqs(self.__class__.__name__):
+            login_details[r] = getpass("%s: " % r.title())
+        self.login(**login_details)
+
+    def go_if_not_there(self, url):
+        if self.browser.url == url:
+            return
+
+        self.browser.go(url)
+
     @classmethod
     def services(cls):
         for c in (v for v in copy(globals()).values() if inspect.isclass(v)):
@@ -45,12 +57,6 @@ class Halifax(Service):
 
     def __init__(self, **kwargs):
         super(Halifax, self).__init__('https://www.halifax-online.co.uk/personal/logon/login.jsp', **kwargs)
-
-    def login_interactive(self):
-        """Called at init if no login details are given"""
-        self.login(raw_input("Username: "),
-                   getpass("Password: "),
-                   getpass("Secret: "))
 
     def login(self, username, password, secret):
         """Called at init if login details supplied, otherwise called via login()"""
