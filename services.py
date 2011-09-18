@@ -1,5 +1,6 @@
 # coding: utf-8
 import inspect
+import re
 from copy import copy
 from getpass import getpass
 from pycurlbrowser.browser import Browser
@@ -85,3 +86,32 @@ class Halifax(Service):
 
     def status(self):
         return self.balance()
+
+class Tmobile(Service):
+
+    def __init__(self, **kwargs):
+        super(Tmobile, self).__init__('http://www.t-mobile.co.uk/service/your-account/mtm-user-login-dispatch/', **kwargs)
+
+    def login(self, username, password):
+        b = self.browser
+
+        b.form_select('MTMUserLoginForm')
+        b.form_data_update(username=username, password=password)
+        b.form_submit()
+
+    def mins_left(self):
+        self.go_if_not_there('https://www.t-mobile.co.uk/service/your-account/private/load-unbilled-use-data/')
+        return re.search('([0-9:]*) Minutes', self.browser.src).group(1)
+
+    def next_bill(self):
+        self.go_if_not_there('https://www.t-mobile.co.uk/service/your-account/private/load-unbilled-use-data/')
+        return re.search('Items will be billed on ([0-9/]*)', self.browser.src).group(1) # TODO: make this a date obj
+
+    def unbilled_usage(self):
+        self.go_if_not_there('https://www.t-mobile.co.uk/service/your-account/private/load-unbilled-use-data/')
+        return int(re.search('([0-9\.]*)</em> activity since your last bill', self.browser.src).group(1).replace('.', ''))
+
+    def status(self):
+        return "Mins left: %(mins_left)s until %(next_bill)s, unbilled: £%(unbilled_usage).2f" % dict(mins_left=self.mins_left(),
+                                                                                                    next_bill=self.next_bill(),
+                                                                                                    unbilled_usage=self.unbilled_usage()/100.0)
