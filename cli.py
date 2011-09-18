@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 import cmd
-from services import Service, Halifax
+from services import Service
 from config import load, save, _config, _get_passphrase
 
 class ExitCmd(cmd.Cmd, object):
