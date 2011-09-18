@@ -20,7 +20,7 @@ class Service(object):
     @classmethod
     def services(cls):
         for c in (v for v in copy(globals()).values() if inspect.isclass(v)):
-            if c == cls:
+            if c == Service:
                 continue
             if cls in inspect.getmro(c):
                 yield c
