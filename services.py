@@ -92,6 +92,33 @@ class Halifax(Service):
     def status(self):
         return self.balance()
 
+class Santander(Service):
+
+    """
+    Represent Santander Credit Card UK
+    """
+
+    def login(self, card_number, internet_id, security_number):
+        b = self.browser
+        b.go('https://myonlineaccounts3.abbeynational.co.uk/GPCC_ENS/BtoChannelDriver.ssobto?dse_operationName=StartL2')
+        b.form_select('form1')
+        b.form_data_update(card=card_number, usuario=internet_id, password=security_number)
+        b.form_submit('Log on')
+        self.main_content_url = b.xpath('//frame[@title="Main Content"]')[0].get('src')
+        b.go(self.main_content_url)
+
+    def status(self):
+        return "Balance: £%(balance).2f, Due: %(payment_due)s" % dict(balance=self.balance()/100.0,
+                                                                      payment_due=self.payment_due())
+
+    def balance(self):
+        self.browser.go(self.main_content_url)
+        return int(self.browser.xpath('//div[@class="html"]/div[@class="f-salida lateral01"]//div[@class="fila"]/span/text()')[0].replace(u'\xa3 ', '').replace('.', ''))
+
+    def payment_due(self):
+        self.browser.go(self.main_content_url)
+        return self.browser.xpath('//div[@class="html"]/div[@class="f-salida lateral01"]//div[@class="fila"]/span/text()')[2] # TODO: make this a date obj
+
 class Tmobile(Service):
 
     """
