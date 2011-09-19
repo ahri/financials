@@ -26,7 +26,7 @@ class Service(object):
     def login_interactive(self):
         login_details = {}
         for r in self.login_reqs(self.__class__.__name__):
-            login_details[r] = getpass("%s: " % r.title())
+            login_details[r] = getpass("%s: " % r.replace('_', ' ').title())
         self.login(**login_details)
 
     def go_replacement(self, url):
