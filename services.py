@@ -13,6 +13,11 @@ class Service(object):
 
     def __init__(self, login_details=None):
         self.browser = Browser()
+
+        # replace Browser.go
+        self._go = self.browser.go
+        self.browser.go = self.go_replacement
+
         if login_details is not None:
             self.login(**login_details)
         else:
@@ -24,11 +29,13 @@ class Service(object):
             login_details[r] = getpass("%s: " % r.title())
         self.login(**login_details)
 
-    def go_if_not_there(self, url):
+    def go_replacement(self, url):
+        """Replacement for Browser.go()"""
         if self.browser.url == url:
             return
 
-        self.browser.go(url)
+        res = self._go(url)
+        assert res == 200, "Only handle valid results"
 
     @classmethod
     def services(cls):
@@ -87,6 +94,10 @@ class Halifax(Service):
 
 class Tmobile(Service):
 
+    """
+    Represent T-Mobile UK
+    """
+
     def login(self, username, password):
         b = self.browser
         b.go('http://www.t-mobile.co.uk/service/your-account/mtm-user-login-dispatch/')
@@ -96,15 +107,15 @@ class Tmobile(Service):
         b.form_submit()
 
     def mins_left(self):
-        self.go_if_not_there('https://www.t-mobile.co.uk/service/your-account/private/load-unbilled-use-data/')
+        self.browser.go('https://www.t-mobile.co.uk/service/your-account/private/load-unbilled-use-data/')
         return re.search('([0-9:]*) Minutes', self.browser.src).group(1)
 
     def next_bill(self):
-        self.go_if_not_there('https://www.t-mobile.co.uk/service/your-account/private/load-unbilled-use-data/')
+        self.browser.go('https://www.t-mobile.co.uk/service/your-account/private/load-unbilled-use-data/')
         return re.search('Items will be billed on ([0-9/]*)', self.browser.src).group(1) # TODO: make this a date obj
 
     def unbilled_usage(self):
-        self.go_if_not_there('https://www.t-mobile.co.uk/service/your-account/private/load-unbilled-use-data/')
+        self.browser.go('https://www.t-mobile.co.uk/service/your-account/private/load-unbilled-use-data/')
         return int(re.search('([0-9\.]*)</em> activity since your last bill', self.browser.src).group(1).replace('.', ''))
 
     def status(self):
