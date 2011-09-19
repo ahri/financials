@@ -92,6 +92,22 @@ class Halifax(Service):
     def status(self):
         return self.balance()
 
+class Natwest(Service):
+
+    """
+    Represent NatWest UK
+
+    NB. this is a WIP; it currently can't login properly (wants an activation)
+    """
+
+    def login(self, customer_number, pin, password):
+        b = self.browser
+        b.go('https://www.nwolb.com/')
+        b.go(b.xpath('//frame')[0].get('src'))
+        b.form_select('aspnetForm')
+        b.form_data_update(**{'ctl00$mainContent$LI5TABA$DBID_edit': customer_number})
+        b.form_submit('Log in')
+
 class Santander(Service):
 
     """
