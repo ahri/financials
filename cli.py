@@ -55,7 +55,7 @@ class ServiceCmd(ExitCmd):
         except ValueError as e:
             print e
 
-    def do_autologin(self, s):
+    def do_autologin(self, svc_name):
         try:
             load('config.enc')
         except IOError:
@@ -65,12 +65,20 @@ class ServiceCmd(ExitCmd):
             print e
             return
 
-        for svc in _config:
-            if 'login_details' in _config[svc]:
-                self.login(svc, login_details=_config[svc]['login_details'])
+        if svc_name == "all":
+            for svc in _config:
+                if 'login_details' in _config[svc]:
+                    self.login(svc, login_details=_config[svc]['login_details'])
+            return
+
+        if svc_name not in _config or 'login_details' not in _config[svc_name]:
+            print "No config found for %s" % svc_name
+            return
+
+        self.login(svc_name, login_details=_config[svc_name]['login_details'])
 
     def help_autologin(self):
-        print "Automatically log in to all services saved in the config file"
+        print "Automatically log in to a service saved in the config file, provide name 'all' to login to everything"
 
     def do_savelogin(self, svc):
         if len(_config) == 0:
