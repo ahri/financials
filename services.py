@@ -11,8 +11,8 @@ class Service(object):
     The basic representation of an service, containing any common stuff
     """
 
-    def __init__(self, initial_url, login_details=None):
-        self.browser = Browser(initial_url)
+    def __init__(self, login_details=None):
+        self.browser = Browser()
         if login_details is not None:
             self.login(**login_details)
         else:
@@ -56,9 +56,6 @@ class Halifax(Service):
     Represent Halifax (HBOS) UK
     """
 
-    def __init__(self, **kwargs):
-        super(Halifax, self).__init__('https://www.halifax-online.co.uk/personal/logon/login.jsp', **kwargs)
-
     def login(self, username, password, secret):
         """Called at init if login details supplied, otherwise called via login()"""
         self.username = username
@@ -66,6 +63,7 @@ class Halifax(Service):
         self.secret = secret
 
         b = self.browser
+        b.go('https://www.halifax-online.co.uk/personal/logon/login.jsp')
 
         b.form_select('frmLogin')
         b.form_data_update(**{'frmLogin:strCustomerLogin_userID': self.username,
@@ -89,11 +87,9 @@ class Halifax(Service):
 
 class Tmobile(Service):
 
-    def __init__(self, **kwargs):
-        super(Tmobile, self).__init__('http://www.t-mobile.co.uk/service/your-account/mtm-user-login-dispatch/', **kwargs)
-
     def login(self, username, password):
         b = self.browser
+        b.go('http://www.t-mobile.co.uk/service/your-account/mtm-user-login-dispatch/')
 
         b.form_select('MTMUserLoginForm')
         b.form_data_update(username=username, password=password)
