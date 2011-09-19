@@ -30,12 +30,17 @@ def _get_passphrase(confirm=False, length_req=15, prompt="Passphrase"):
     return p1
 
 def load(filename):
-    crypt = crypto.new(_get_passphrase(length_req=0, prompt="Config passphrase"), crypto.MODE_ECB)
     with open(filename, 'r') as cfg_file:
-        _config.update(json.loads(crypt.decrypt(cfg_file.read())))
+        data = cfg_file.read()
+
+    crypt = crypto.new(_get_passphrase(length_req=0, prompt="Open config passphrase"), crypto.MODE_ECB)
+    try:
+        _config.update(json.loads(crypt.decrypt(data)))
+    except json.decoder.JSONDecodeError:
+        raise ValueError("Incorrect passphrase given")
 
 def save(filename):
-    crypt = crypto.new(_get_passphrase(confirm=True, prompt="Config passphrase"), crypto.MODE_ECB)
+    crypt = crypto.new(_get_passphrase(confirm=True, prompt="Save config passphrase"), crypto.MODE_ECB)
     s = json.dumps(_config)
     padded_size = len(s) + (crypto.block_size - len(s) % crypto.block_size)
     with open(filename, 'w') as cfg_file:

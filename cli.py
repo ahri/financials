@@ -56,7 +56,15 @@ class ServiceCmd(ExitCmd):
             print e
 
     def do_autologin(self, s):
-        load('config.enc')
+        try:
+            load('config.enc')
+        except IOError:
+            print "No config file found"
+            return
+        except ValueError as e:
+            print e
+            return
+
         for svc in _config:
             if 'login_details' in _config[svc]:
                 self.login(svc, login_details=_config[svc]['login_details'])
@@ -65,6 +73,15 @@ class ServiceCmd(ExitCmd):
         print "Automatically log in to all services saved in the config file"
 
     def do_savelogin(self, svc):
+        if len(_config) == 0:
+            try:
+                load('config.enc')
+            except IOError:
+                pass
+            except ValueError as e:
+                print e
+                return
+
         try:
             d = {}
             for k in Service.login_reqs(svc):
