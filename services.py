@@ -58,6 +58,13 @@ class Service(object):
     def login_reqs(cls, svc_name):
         return inspect.getargspec(cls.service(svc_name).login).args[1:]
 
+    def assert_url_changes(self, f, *args, **kwargs):
+        b = self.browser
+        old_url = b.url
+        ret = f(*args, **kwargs)
+        assert b.url != old_url, "URL should not be %s" % old_url
+        return ret
+
 class Halifax(Service):
 
     """
@@ -84,7 +91,7 @@ class Halifax(Service):
             idx = int(d.label.text.replace("Character ", "").replace(u" \xa0", ""))
             b.form_fill_dropdown(d.name, u"\xa0" + self.secret[idx-1])
 
-        b.form_submit_no_button()
+        self.assert_url_changes(b.form_submit_no_button)
 
     def balance(self):
         """Balance for account"""
