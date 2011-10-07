@@ -13,6 +13,7 @@ class Service(object):
 
     def __init__(self, login_details=None):
         self.browser = Browser()
+        self.browser.retries = 5
 
         # replace Browser.go
         self._go = self.browser.go
